@@ -167,5 +167,14 @@ namespace Blazor.ClassBuilder
         {
             return _cssBuilder.ToString().Trim();
         }
+
+        /// <summary>
+        /// Returns the built CSS class string. Equivalent to calling Build().
+        /// </summary>
+        /// <returns>The CSS class string.</returns>
+        public override string ToString()
+        {
+            return Build();
+        }
     }
 }
