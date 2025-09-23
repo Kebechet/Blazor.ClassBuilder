@@ -5,4 +5,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Kebechet.Extensions.IsNullOrEmpty" Version="1.0.1" PrivateAssets="all" />
+  </ItemGroup>
+
 </Project>
