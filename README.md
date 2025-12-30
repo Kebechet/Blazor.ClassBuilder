@@ -3,6 +3,8 @@
 # Blazor.ClassBuilder
 [![NuGet Version](https://img.shields.io/nuget/v/Kebechet.Blazor.ClassBuilder)](https://www.nuget.org/packages/Kebechet.Blazor.ClassBuilder/)
 [![NuGet Downloads](https://img.shields.io/nuget/dt/Kebechet.Blazor.ClassBuilder)](https://www.nuget.org/packages/Kebechet.Blazor.ClassBuilder/)
+[![CI](https://github.com/Kebechet/Blazor.ClassBuilder/actions/workflows/ci.yml/badge.svg)](https://github.com/Kebechet/Blazor.ClassBuilder/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/Kebechet/Blazor.ClassBuilder/graph/badge.svg)](https://codecov.io/gh/Kebechet/Blazor.ClassBuilder)
 [![Twitter](https://img.shields.io/twitter/url/https/twitter.com/samuel_sidor.svg?style=social&label=Follow%20samuel_sidor)](https://x.com/samuel_sidor)
 
 A fluent builder library for constructing CSS class names and HTML attributes in Blazor components. This library provides a clean and intuitive way to conditionally apply CSS classes and HTML attributes in your Blazor applications.
