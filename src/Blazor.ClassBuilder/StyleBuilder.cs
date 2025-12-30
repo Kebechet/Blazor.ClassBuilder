@@ -1,5 +1,6 @@
 using System;
 using System.Text;
+using Blazor.ClassBuilder.Extensions;
 
 namespace Blazor.ClassBuilder
 {
@@ -42,6 +43,22 @@ namespace Blazor.ClassBuilder
         }
 
         /// <summary>
+        /// Adds a CSS style property with a numeric value. E.g. Add("width", 50.5, "%")
+        /// </summary>
+        public StyleBuilder Add(string property, double value, string unit = "")
+        {
+            return AddIf(true, property, value, unit);
+        }
+
+        /// <summary>
+        /// Adds a CSS style property with an integer value. E.g. Add("z-index", 10)
+        /// </summary>
+        public StyleBuilder Add(string property, int value, string unit = "")
+        {
+            return AddIf(true, property, value, unit);
+        }
+
+        /// <summary>
         /// Adds a CSS style property if the condition is true.
         /// </summary>
         public StyleBuilder AddIf(bool canAdd, string property, string value)
@@ -75,6 +92,44 @@ namespace Blazor.ClassBuilder
                 _styleBuilder.Append(";");
             }
             _styleBuilder.Append(" ");
+
+            return this;
+        }
+
+        /// <summary>
+        /// Adds a CSS style property with a numeric value if the condition is true.
+        /// </summary>
+        public StyleBuilder AddIf(bool canAdd, string property, double value, string unit = "")
+        {
+            if (!canAdd || string.IsNullOrEmpty(property))
+            {
+                return this;
+            }
+
+            _styleBuilder.Append(property);
+            _styleBuilder.Append(": ");
+            _styleBuilder.Append(value.ToCssString());
+            _styleBuilder.Append(unit);
+            _styleBuilder.Append("; ");
+
+            return this;
+        }
+
+        /// <summary>
+        /// Adds a CSS style property with an integer value if the condition is true.
+        /// </summary>
+        public StyleBuilder AddIf(bool canAdd, string property, int value, string unit = "")
+        {
+            if (!canAdd || string.IsNullOrEmpty(property))
+            {
+                return this;
+            }
+
+            _styleBuilder.Append(property);
+            _styleBuilder.Append(": ");
+            _styleBuilder.Append(value);
+            _styleBuilder.Append(unit);
+            _styleBuilder.Append("; ");
 
             return this;
         }
