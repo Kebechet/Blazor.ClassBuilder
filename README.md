@@ -213,6 +213,147 @@ var attrs = new AttributeBuilder()
 }
 ```
 
+## Works great with `@attributes`
+
+Merge CSS classes and inline styles from Blazor's `@attributes` / `AdditionalAttributes` dictionary:
+
+### Merge CSS Classes
+
+```csharp
+@code {
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private string CssClass => new ClassBuilder("btn")
+        .Add("btn-primary")
+        .AddClassFromAttributes(AdditionalAttributes)  // Merges "class" from @attributes
+        .Build();
+}
+```
+
+Usage in parent component:
+```razor
+<MyButton class="mt-2 rounded">Click me</MyButton>
+<!-- Renders: class="btn btn-primary mt-2 rounded" -->
+```
+
+### Merge Inline Styles
+
+```csharp
+@code {
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private string DynamicStyle => new StyleBuilder()
+        .Add("display", "block")
+        .AddStyleFromAttributes(AdditionalAttributes)  // Merges "style" from @attributes
+        .Build();
+}
+```
+
+Usage in parent component:
+```razor
+<MyComponent style="color: red; font-weight: bold">Content</MyComponent>
+<!-- Renders: style="display: block; color: red; font-weight: bold;" -->
+```
+
+**Note:** When merging classes, tokens are deduplicated. When merging styles with duplicate properties, the builder's values come first, followed by the attribute values.
+
+## Class Prefixing
+
+Apply a prefix to all CSS classes for BEM or scoped design systems:
+
+```csharp
+var css = new ClassBuilder()
+    .SetPrefix("sf")           // Set prefix
+    .Add("btn")                // Becomes "sf-btn"
+    .Add("primary")            // Becomes "sf-primary"
+    .Build();                  // "sf-btn sf-primary"
+
+// Custom separator
+var css2 = new ClassBuilder()
+    .SetPrefix("app", "_")     // Use underscore separator
+    .Add("button")             // Becomes "app_button"
+    .Build();
+
+// Clear prefix
+var css3 = new ClassBuilder()
+    .SetPrefix("sf")
+    .Add("btn")                // "sf-btn"
+    .ClearPrefix()
+    .Add("active")             // "active" (no prefix)
+    .Build();                  // "sf-btn active"
+```
+
+**Note:** Prefixes apply only to classes added via `Add()` methods, NOT to classes merged from `@attributes`.
+
+## Lazy Evaluation
+
+Defer expensive operations until they're actually needed:
+
+### ClassBuilder
+
+```csharp
+// Lazy condition evaluation
+var css = new ClassBuilder()
+    .Add(() => IsComplexCondition(), "expensive-class")
+    .Build();
+
+// Lazy value factory (only computed if condition is true)
+var css2 = new ClassBuilder()
+    .Add(isEnabled, () => ComputeExpensiveClassName())
+    .Build();
+```
+
+### StyleBuilder
+
+```csharp
+// Lazy value factory for string values
+var style = new StyleBuilder()
+    .Add("background", needsGradient, () => GenerateGradient())
+    .Build();
+
+// Lazy value factory for numeric values
+var style2 = new StyleBuilder()
+    .Add("width", isDynamic, () => CalculateWidth(), "%")
+    .Build();
+```
+
+### AttributeBuilder
+
+```csharp
+// Lazy value factory
+var attrs = new AttributeBuilder()
+    .Add("data-config", isComplex, () => SerializeConfig())
+    .Build();
+```
+
+**Guarantee:** When the condition is false, the factory is **never invoked**.
+
+## Avoid Rendering Empty Attributes
+
+Use `NullIfEmpty()` to return `null` instead of an empty string, preventing Blazor from rendering empty attributes:
+
+```csharp
+<div class="@CssClass" style="@DynamicStyle">Content</div>
+
+@code {
+    private string? CssClass => new ClassBuilder()
+        .AddIf(false, "hidden")
+        .NullIfEmpty();  // Returns null instead of ""
+
+    private string? DynamicStyle => new StyleBuilder()
+        .AddIf(false, "display", "none")
+        .NullIfEmpty();  // Returns null instead of ""
+}
+```
+
+Result when conditions are false:
+```html
+<div>Content</div>
+<!-- No class or style attributes rendered -->
+```
+
 ## API Reference
 
 ### ClassBuilder
@@ -224,6 +365,12 @@ var attrs = new AttributeBuilder()
 | `AddIf(bool, string)` | Add class if condition is true |
 | `AddIf(bool, Action<ClassBuilder>)` | Execute builder action if condition is true |
 | `AddIfElse(bool, string, string)` | Add first or second class based on condition |
+| `AddClassFromAttributes(IReadOnlyDictionary<string, object?>?, string)` | Merge classes from attributes dictionary |
+| `SetPrefix(string?, string)` | Set prefix for subsequently added classes |
+| `ClearPrefix()` | Clear the prefix |
+| `Add(Func<bool>, string)` | Add class with lazy condition evaluation |
+| `Add(bool, Func<string>)` | Add class with lazy value factory |
+| `NullIfEmpty()` | Return null if result is empty/whitespace |
 | `Clear()` | Remove all classes |
 | `Build()` | Get the final class string |
 
@@ -237,6 +384,12 @@ var attrs = new AttributeBuilder()
 | `Add(string, int, string)` | Add integer value with unit |
 | `AddIf(bool, ...)` | Add style if condition is true |
 | `AddIfElse(bool, ...)` | Add style based on condition |
+| `AddStyleFromAttributes(IReadOnlyDictionary<string, object?>?, string)` | Merge styles from attributes dictionary |
+| `AddVerbatim(string)` | Add raw CSS snippet verbatim |
+| `Add(Func<bool>, string, string)` | Add style with lazy condition evaluation |
+| `Add(string, bool, Func<string>)` | Add style with lazy string value factory |
+| `Add(string, bool, Func<double>, string)` | Add style with lazy numeric value factory |
+| `NullIfEmpty()` | Return null if result is empty/whitespace |
 | `Clear()` | Remove all styles |
 | `Build()` | Get the final style string |
 
@@ -248,6 +401,7 @@ var attrs = new AttributeBuilder()
 | `Add(AttributeBuilder)` | Merge another builder |
 | `AddIf(bool, string, object?)` | Add if condition is true |
 | `AddIfFilled(string, object?)` | Add if value is not null/empty |
+| `Add(string, bool, Func<object?>)` | Add attribute with lazy value factory |
 | `Throw(bool, string)` | Throw exception if condition is true |
 | `Build()` | Get the attribute dictionary |
 
