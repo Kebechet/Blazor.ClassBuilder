@@ -296,5 +296,40 @@ namespace Blazor.ClassBuilder.Tests
             // Assert
             Assert.Equal("True", result["data-active"]);
         }
+
+        // Feature 5: Lazy evaluation tests
+        [Fact]
+        public void Add_LazyValue_True_InvokesFactory()
+        {
+            // Arrange
+            var factoryCalled = false;
+            object Factory() { factoryCalled = true; return "test-value"; }
+
+            // Act
+            var result = new AttributeBuilder()
+                .Add(true, "data-value", Factory)
+                .Build();
+
+            // Assert
+            Assert.True(factoryCalled);
+            Assert.Equal("test-value", result["data-value"]);
+        }
+
+        [Fact]
+        public void Add_LazyValue_False_DoesNotInvokeFactory()
+        {
+            // Arrange
+            var factoryCalled = false;
+            object Factory() { factoryCalled = true; return "test-value"; }
+
+            // Act
+            var result = new AttributeBuilder()
+                .Add(false, "data-value", Factory)
+                .Build();
+
+            // Assert
+            Assert.False(factoryCalled);
+            Assert.False(result.ContainsKey("data-value"));
+        }
     }
 }

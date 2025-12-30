@@ -72,6 +72,20 @@ namespace Blazor.ClassBuilder
         }
 
         /// <summary>
+        /// Adds an attribute with a lazy-evaluated value factory if the condition is true.
+        /// The factory is only invoked if the condition is true.
+        /// </summary>
+        public AttributeBuilder Add(bool canAdd, string parameterName, Func<object?> valueFactory)
+        {
+            if (!canAdd)
+            {
+                return this;
+            }
+
+            return Add(parameterName, valueFactory());
+        }
+
+        /// <summary>
         /// Throws an ArgumentException if the condition is true. E.g. Throw(isDisabled, "The component cannot be disabled")
         /// </summary>
         public AttributeBuilder Throw(bool canThrow, string exceptionText)
