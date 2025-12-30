@@ -1,9 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.14.36511.14 d17.14
+# Visual Studio Version 18
+VisualStudioVersion = 18.3.11312.210 d18.3
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blazor.ClassBuilder", "Blazor.ClassBuilder\Blazor.ClassBuilder.csproj", "{764B11DE-D134-4487-8FD6-EBE827C5CF6E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{3436013A-92BE-4DBE-80D5-00C5CDF51A24}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blazor.ClassBuilder.Tests", "..\tests\Blazor.ClassBuilder.Tests\Blazor.ClassBuilder.Tests.csproj", "{18B092F9-8541-8E73-702E-A81CC19C9224}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,9 +19,16 @@ Global
 		{764B11DE-D134-4487-8FD6-EBE827C5CF6E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{764B11DE-D134-4487-8FD6-EBE827C5CF6E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{764B11DE-D134-4487-8FD6-EBE827C5CF6E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{18B092F9-8541-8E73-702E-A81CC19C9224}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{18B092F9-8541-8E73-702E-A81CC19C9224}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{18B092F9-8541-8E73-702E-A81CC19C9224}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{18B092F9-8541-8E73-702E-A81CC19C9224}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{18B092F9-8541-8E73-702E-A81CC19C9224} = {3436013A-92BE-4DBE-80D5-00C5CDF51A24}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {55FF7A5A-FD9F-4BB5-AFE5-6088CFF2FDA8}
