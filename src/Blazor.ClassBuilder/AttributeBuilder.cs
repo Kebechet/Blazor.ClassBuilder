@@ -75,9 +75,9 @@ namespace Blazor.ClassBuilder
         /// Adds an attribute with a lazy-evaluated value factory if the condition is true.
         /// The factory is only invoked if the condition is true.
         /// </summary>
-        public AttributeBuilder Add(string parameterName, bool when, Func<object?> valueFactory)
+        public AttributeBuilder Add(string parameterName, bool canAdd, Func<object?> valueFactory)
         {
-            if (!when)
+            if (!canAdd)
             {
                 return this;
             }

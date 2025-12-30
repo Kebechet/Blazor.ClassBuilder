@@ -250,9 +250,9 @@ namespace Blazor.ClassBuilder
         /// Adds a CSS class with a lazy-evaluated value factory if the condition is true.
         /// The factory is only invoked if the condition is true.
         /// </summary>
-        public ClassBuilder Add(bool when, Func<string> valueFactory)
+        public ClassBuilder Add(bool canAdd, Func<string> valueFactory)
         {
-            if (!when)
+            if (!canAdd)
             {
                 return this;
             }

@@ -234,9 +234,9 @@ namespace Blazor.ClassBuilder
         /// Adds a style property with a lazy-evaluated value factory if the condition is true.
         /// The factory is only invoked if the condition is true.
         /// </summary>
-        public StyleBuilder Add(string property, bool when, Func<string> valueFactory)
+        public StyleBuilder Add(string property, bool canAdd, Func<string> valueFactory)
         {
-            if (!when)
+            if (!canAdd)
             {
                 return this;
             }
@@ -248,9 +248,9 @@ namespace Blazor.ClassBuilder
         /// Adds a style property with a numeric value using a lazy-evaluated factory if the condition is true.
         /// The factory is only invoked if the condition is true.
         /// </summary>
-        public StyleBuilder Add(string property, bool when, Func<double> valueFactory, string unit = "")
+        public StyleBuilder Add(string property, bool canAdd, Func<double> valueFactory, string unit = "")
         {
-            if (!when)
+            if (!canAdd)
             {
                 return this;
             }
