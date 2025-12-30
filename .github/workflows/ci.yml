@@ -73,6 +73,7 @@ jobs:
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     permissions:
       contents: write
+      packages: write
 
     steps:
     - uses: actions/checkout@v4
@@ -117,6 +118,10 @@ jobs:
     - name: Publish to NuGet
       if: steps.tag_check.outputs.exists == 'false'
       run: dotnet nuget push ./nupkg/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+
+    - name: Publish to GitHub Packages
+      if: steps.tag_check.outputs.exists == 'false'
+      run: dotnet nuget push ./nupkg/*.nupkg --api-key ${{ secrets.GITHUB_TOKEN }} --source https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json --skip-duplicate
 
     - name: Create and push tag
       if: steps.tag_check.outputs.exists == 'false'
