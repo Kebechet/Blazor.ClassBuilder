@@ -307,7 +307,7 @@ namespace Blazor.ClassBuilder.Tests
 
             // Act
             var result = new AttributeBuilder()
-                .Add("data-value", true, Factory)
+                .Add(true, "data-value", Factory)
                 .Build();
 
             // Assert
@@ -324,7 +324,7 @@ namespace Blazor.ClassBuilder.Tests
 
             // Act
             var result = new AttributeBuilder()
-                .Add("data-value", false, Factory)
+                .Add(false, "data-value", Factory)
                 .Build();
 
             // Assert
