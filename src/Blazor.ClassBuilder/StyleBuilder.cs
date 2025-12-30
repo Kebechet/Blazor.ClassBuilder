@@ -179,7 +179,9 @@ namespace Blazor.ClassBuilder
         /// <summary>
         /// Adds inline styles from an attributes dictionary (e.g., from Blazor @attributes).
         /// Merges the "style" attribute value by appending it to the current styles.
-        /// When the same CSS property appears multiple times, the builder's values take precedence (come first).
+        /// Builder styles are declared first, followed by attribute styles.
+        /// Note: In CSS, later declarations override earlier ones, so attribute styles will take precedence
+        /// when the same property appears in both builder and attributes.
         /// </summary>
         /// <param name="attributes">The attributes dictionary to merge from.</param>
         /// <param name="key">The attribute key to look for (default: "style").</param>

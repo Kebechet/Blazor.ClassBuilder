@@ -568,7 +568,7 @@ namespace Blazor.ClassBuilder.Tests
         }
 
         [Fact]
-        public void AddStyleFromAttributes_BuilderPrecedence_BuilderComesFirst()
+        public void AddStyleFromAttributes_Ordering_BuilderFirstThenAttributes()
         {
             // Arrange - same property appears in both
             var builder = new StyleBuilder().Add("color", "red");
@@ -577,7 +577,8 @@ namespace Blazor.ClassBuilder.Tests
             // Act
             var result = builder.AddStyleFromAttributes(attrs).Build();
 
-            // Assert - builder's value comes first (red before blue)
+            // Assert - builder's value comes first in the string, attribute value comes second
+            // Note: In CSS, later declarations override earlier ones, so blue will win
             Assert.StartsWith("color: red;", result);
             Assert.Contains("color: blue;", result);
         }

@@ -204,23 +204,29 @@ namespace Blazor.ClassBuilder
                 return this;
             }
 
-            // Tokenize by whitespace, trim each token
+            // Tokenize by whitespace, trim each token, and materialize to avoid re-enumeration
             var tokens = classString.Split(new[] { ' ', '\t', '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries)
                                     .Select(t => t.Trim())
                                     .Where(t => !string.IsNullOrEmpty(t))
-                                    .Distinct(); // Deduplicate
+                                    .Distinct()
+                                    .ToArray(); // Materialize to avoid re-enumeration
 
             // Temporarily save prefix and clear it for attribute classes
             var savedPrefix = _prefix;
-            _prefix = null;
-
-            foreach (var token in tokens)
+            try
             {
-                Add(token);
-            }
+                _prefix = null;
 
-            // Restore prefix
-            _prefix = savedPrefix;
+                foreach (var token in tokens)
+                {
+                    Add(token);
+                }
+            }
+            finally
+            {
+                // Always restore prefix, even if an exception occurs
+                _prefix = savedPrefix;
+            }
 
             return this;
         }

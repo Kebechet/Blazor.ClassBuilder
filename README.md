@@ -257,7 +257,7 @@ Usage in parent component:
 <!-- Renders: style="display: block; color: red; font-weight: bold;" -->
 ```
 
-**Note:** When merging classes, tokens are deduplicated. When merging styles with duplicate properties, the builder's values come first, followed by the attribute values.
+**Note:** When merging classes, tokens are deduplicated. When merging styles, builder styles are declared first, followed by attribute styles. In CSS, later declarations override earlier ones, so if the same property appears in both builder and attributes, the attribute value will take precedence.
 
 ## Class Prefixing
 
