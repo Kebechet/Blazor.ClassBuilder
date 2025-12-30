@@ -56,10 +56,14 @@ jobs:
     - name: Test with coverage
       run: dotnet test src/Blazor.ClassBuilder.sln --no-build --configuration Release --collect:"XPlat Code Coverage" --results-directory ./coverage
 
+    - name: Find coverage file
+      id: coverage
+      run: echo "file=$(find ./coverage -name 'coverage.cobertura.xml' | head -1)" >> $GITHUB_OUTPUT
+
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v5
       with:
-        directory: ./coverage
+        files: ${{ steps.coverage.outputs.file }}
         fail_ci_if_error: false
         token: ${{ secrets.CODECOV_TOKEN }}
 
