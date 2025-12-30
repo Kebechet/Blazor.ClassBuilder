@@ -9,110 +9,148 @@ namespace Blazor.ClassBuilder.Tests
         [Fact]
         public void Constructor_Empty_ReturnsEmptyString()
         {
+            // Arrange
             var builder = new StyleBuilder();
-            Assert.Equal("", builder.Build());
+
+            // Act
+            var result = builder.Build();
+
+            // Assert
+            Assert.Equal("", result);
         }
 
         [Fact]
         public void Constructor_WithInitialValue_ReturnsStyle()
         {
+            // Arrange & Act
             var builder = new StyleBuilder("color", "red");
+
+            // Assert
             Assert.Equal("color: red;", builder.Build());
         }
 
         [Fact]
         public void Add_PropertyAndValue_ReturnsStyle()
         {
-            var result = new StyleBuilder()
-                .Add("color", "red")
-                .Build();
+            // Arrange
+            var builder = new StyleBuilder();
 
+            // Act
+            var result = builder.Add("color", "red").Build();
+
+            // Assert
             Assert.Equal("color: red;", result);
         }
 
         [Fact]
         public void Add_MultipleStyles_ReturnsSemicolonSeparated()
         {
-            var result = new StyleBuilder()
+            // Arrange
+            var builder = new StyleBuilder();
+
+            // Act
+            var result = builder
                 .Add("color", "red")
                 .Add("font-size", "14px")
                 .Build();
 
+            // Assert
             Assert.Equal("color: red; font-size: 14px;", result);
         }
 
         [Fact]
         public void Add_RawStyle_ReturnsStyle()
         {
-            var result = new StyleBuilder()
-                .Add("color: red")
-                .Build();
+            // Arrange
+            var builder = new StyleBuilder();
 
+            // Act
+            var result = builder.Add("color: red").Build();
+
+            // Assert
             Assert.Equal("color: red;", result);
         }
 
         [Fact]
         public void Add_RawStyleWithSemicolon_DoesNotDuplicate()
         {
-            var result = new StyleBuilder()
-                .Add("color: red;")
-                .Build();
+            // Arrange
+            var builder = new StyleBuilder();
 
+            // Act
+            var result = builder.Add("color: red;").Build();
+
+            // Assert
             Assert.Equal("color: red;", result);
         }
 
         [Fact]
         public void Add_DoubleValue_ReturnsStyleWithUnit()
         {
-            var result = new StyleBuilder()
-                .Add("width", 50.5, "%")
-                .Build();
+            // Arrange
+            var builder = new StyleBuilder();
 
+            // Act
+            var result = builder.Add("width", 50.5, "%").Build();
+
+            // Assert
             Assert.Equal("width: 50.5%;", result);
         }
 
         [Fact]
         public void Add_DoubleValue_WithoutUnit_ReturnsStyle()
         {
-            var result = new StyleBuilder()
-                .Add("opacity", 0.8)
-                .Build();
+            // Arrange
+            var builder = new StyleBuilder();
 
+            // Act
+            var result = builder.Add("opacity", 0.8).Build();
+
+            // Assert
             Assert.Equal("opacity: 0.8;", result);
         }
 
         [Fact]
         public void Add_IntValue_ReturnsStyleWithUnit()
         {
-            var result = new StyleBuilder()
-                .Add("margin", 10, "px")
-                .Build();
+            // Arrange
+            var builder = new StyleBuilder();
 
+            // Act
+            var result = builder.Add("margin", 10, "px").Build();
+
+            // Assert
             Assert.Equal("margin: 10px;", result);
         }
 
         [Fact]
         public void Add_IntValue_WithoutUnit_ReturnsStyle()
         {
-            var result = new StyleBuilder()
-                .Add("z-index", 10)
-                .Build();
+            // Arrange
+            var builder = new StyleBuilder();
 
+            // Act
+            var result = builder.Add("z-index", 10).Build();
+
+            // Assert
             Assert.Equal("z-index: 10;", result);
         }
 
         [Fact]
         public void Add_DoubleValue_UsesInvariantCulture()
         {
+            // Arrange
             var originalCulture = Thread.CurrentThread.CurrentCulture;
+            Thread.CurrentThread.CurrentCulture = new CultureInfo("de-DE");
+
             try
             {
-                Thread.CurrentThread.CurrentCulture = new CultureInfo("de-DE");
+                var builder = new StyleBuilder();
 
-                var result = new StyleBuilder()
-                    .Add("width", 50.5, "%")
-                    .Build();
+                // Act
+                var result = builder.Add("width", 50.5, "%").Build();
 
+                // Assert
                 Assert.Equal("width: 50.5%;", result);
                 Assert.DoesNotContain(",", result);
             }
@@ -125,197 +163,272 @@ namespace Blazor.ClassBuilder.Tests
         [Fact]
         public void Add_NullOrEmptyProperty_IsIgnored()
         {
-            var result = new StyleBuilder()
+            // Arrange
+            var builder = new StyleBuilder();
+
+            // Act
+            var result = builder
                 .Add("color", "red")
                 .Add("", "value")
                 .Add(null, "value")
                 .Add("font-size", "14px")
                 .Build();
 
+            // Assert
             Assert.Equal("color: red; font-size: 14px;", result);
         }
 
         [Fact]
         public void Add_NullOrEmptyValue_IsIgnored()
         {
-            var result = new StyleBuilder()
+            // Arrange
+            var builder = new StyleBuilder();
+
+            // Act
+            var result = builder
                 .Add("color", "red")
                 .Add("display", "")
                 .Add("visibility", null)
                 .Add("font-size", "14px")
                 .Build();
 
+            // Assert
             Assert.Equal("color: red; font-size: 14px;", result);
         }
 
         [Fact]
         public void AddIf_True_AddsStyle()
         {
-            var result = new StyleBuilder()
-                .AddIf(true, "display", "block")
-                .Build();
+            // Arrange
+            var builder = new StyleBuilder();
 
+            // Act
+            var result = builder.AddIf(true, "display", "block").Build();
+
+            // Assert
             Assert.Equal("display: block;", result);
         }
 
         [Fact]
         public void AddIf_False_DoesNotAddStyle()
         {
-            var result = new StyleBuilder()
-                .AddIf(false, "display", "block")
-                .Build();
+            // Arrange
+            var builder = new StyleBuilder();
 
+            // Act
+            var result = builder.AddIf(false, "display", "block").Build();
+
+            // Assert
             Assert.Equal("", result);
         }
 
         [Fact]
         public void AddIf_RawStyle_True_AddsStyle()
         {
-            var result = new StyleBuilder()
-                .AddIf(true, "display: block")
-                .Build();
+            // Arrange
+            var builder = new StyleBuilder();
 
+            // Act
+            var result = builder.AddIf(true, "display: block").Build();
+
+            // Assert
             Assert.Equal("display: block;", result);
         }
 
         [Fact]
         public void AddIf_RawStyle_False_DoesNotAddStyle()
         {
-            var result = new StyleBuilder()
-                .AddIf(false, "display: block")
-                .Build();
+            // Arrange
+            var builder = new StyleBuilder();
 
+            // Act
+            var result = builder.AddIf(false, "display: block").Build();
+
+            // Assert
             Assert.Equal("", result);
         }
 
         [Fact]
         public void AddIf_DoubleValue_True_AddsStyle()
         {
-            var result = new StyleBuilder()
-                .AddIf(true, "width", 50.5, "%")
-                .Build();
+            // Arrange
+            var builder = new StyleBuilder();
 
+            // Act
+            var result = builder.AddIf(true, "width", 50.5, "%").Build();
+
+            // Assert
             Assert.Equal("width: 50.5%;", result);
         }
 
         [Fact]
         public void AddIf_DoubleValue_False_DoesNotAddStyle()
         {
-            var result = new StyleBuilder()
-                .AddIf(false, "width", 50.5, "%")
-                .Build();
+            // Arrange
+            var builder = new StyleBuilder();
 
+            // Act
+            var result = builder.AddIf(false, "width", 50.5, "%").Build();
+
+            // Assert
             Assert.Equal("", result);
         }
 
         [Fact]
         public void AddIf_IntValue_True_AddsStyle()
         {
-            var result = new StyleBuilder()
-                .AddIf(true, "z-index", 10)
-                .Build();
+            // Arrange
+            var builder = new StyleBuilder();
 
+            // Act
+            var result = builder.AddIf(true, "z-index", 10).Build();
+
+            // Assert
             Assert.Equal("z-index: 10;", result);
         }
 
         [Fact]
         public void AddIf_IntValue_False_DoesNotAddStyle()
         {
-            var result = new StyleBuilder()
-                .AddIf(false, "z-index", 10)
-                .Build();
+            // Arrange
+            var builder = new StyleBuilder();
 
+            // Act
+            var result = builder.AddIf(false, "z-index", 10).Build();
+
+            // Assert
             Assert.Equal("", result);
         }
 
         [Fact]
         public void AddIf_WithAction_True_InvokesAction()
         {
-            var result = new StyleBuilder()
+            // Arrange
+            var builder = new StyleBuilder();
+
+            // Act
+            var result = builder
                 .AddIf(true, b => b.Add("color", "red"))
                 .Build();
 
+            // Assert
             Assert.Equal("color: red;", result);
         }
 
         [Fact]
         public void AddIf_WithAction_False_DoesNotInvokeAction()
         {
-            var result = new StyleBuilder()
+            // Arrange
+            var builder = new StyleBuilder();
+
+            // Act
+            var result = builder
                 .AddIf(false, b => b.Add("color", "red"))
                 .Build();
 
+            // Assert
             Assert.Equal("", result);
         }
 
         [Fact]
         public void AddIfElse_True_AddsFirstStyle()
         {
-            var result = new StyleBuilder()
+            // Arrange
+            var builder = new StyleBuilder();
+
+            // Act
+            var result = builder
                 .AddIfElse(true, "display", "block", "display", "none")
                 .Build();
 
+            // Assert
             Assert.Equal("display: block;", result);
         }
 
         [Fact]
         public void AddIfElse_False_AddsSecondStyle()
         {
-            var result = new StyleBuilder()
+            // Arrange
+            var builder = new StyleBuilder();
+
+            // Act
+            var result = builder
                 .AddIfElse(false, "display", "block", "display", "none")
                 .Build();
 
+            // Assert
             Assert.Equal("display: none;", result);
         }
 
         [Fact]
         public void AddIfElse_WithActions_True_InvokesFirstAction()
         {
-            var result = new StyleBuilder()
+            // Arrange
+            var builder = new StyleBuilder();
+
+            // Act
+            var result = builder
                 .AddIfElse(true, b => b.Add("color", "green"), b => b.Add("color", "red"))
                 .Build();
 
+            // Assert
             Assert.Equal("color: green;", result);
         }
 
         [Fact]
         public void AddIfElse_WithActions_False_InvokesSecondAction()
         {
-            var result = new StyleBuilder()
+            // Arrange
+            var builder = new StyleBuilder();
+
+            // Act
+            var result = builder
                 .AddIfElse(false, b => b.Add("color", "green"), b => b.Add("color", "red"))
                 .Build();
 
+            // Assert
             Assert.Equal("color: red;", result);
         }
 
         [Fact]
         public void Clear_RemovesAllStyles()
         {
+            // Arrange
             var builder = new StyleBuilder()
                 .Add("color", "red")
                 .Add("font-size", "14px");
 
+            // Act
             builder.Clear();
 
+            // Assert
             Assert.Equal("", builder.Build());
         }
 
         [Fact]
         public void ToString_ReturnsSameAsBuild()
         {
+            // Arrange
             var builder = new StyleBuilder()
                 .Add("color", "red")
                 .Add("font-size", "14px");
 
-            Assert.Equal(builder.Build(), builder.ToString());
+            // Act
+            var buildResult = builder.Build();
+            var toStringResult = builder.ToString();
+
+            // Assert
+            Assert.Equal(buildResult, toStringResult);
         }
 
         [Fact]
         public void FluentChaining_Works()
         {
+            // Arrange
             var isVisible = true;
             var hasMargin = false;
 
+            // Act
             var result = new StyleBuilder("color", "red")
                 .Add("font-size", "14px")
                 .AddIf(isVisible, "display", "block")
@@ -323,6 +436,7 @@ namespace Blazor.ClassBuilder.Tests
                 .Add("opacity", 0.9)
                 .Build();
 
+            // Assert
             Assert.Equal("color: red; font-size: 14px; display: block; opacity: 0.9;", result);
         }
     }
