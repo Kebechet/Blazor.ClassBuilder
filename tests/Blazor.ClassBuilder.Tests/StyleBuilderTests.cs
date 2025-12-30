@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Globalization;
 using System.Threading;
 using Xunit;
@@ -438,6 +439,318 @@ namespace Blazor.ClassBuilder.Tests
 
             // Assert
             Assert.Equal("color: red; font-size: 14px; display: block; opacity: 0.9;", result);
+        }
+
+        // Feature 2: AddStyleFromAttributes tests
+        [Fact]
+        public void AddStyleFromAttributes_NullAttributes_NoOp()
+        {
+            // Arrange
+            var builder = new StyleBuilder().Add("color", "red");
+
+            // Act
+            var result = builder.AddStyleFromAttributes(null).Build();
+
+            // Assert
+            Assert.Equal("color: red;", result);
+        }
+
+        [Fact]
+        public void AddStyleFromAttributes_MissingKey_NoOp()
+        {
+            // Arrange
+            var builder = new StyleBuilder().Add("color", "red");
+            var attrs = new Dictionary<string, object?> { { "id", "test" } };
+
+            // Act
+            var result = builder.AddStyleFromAttributes(attrs).Build();
+
+            // Assert
+            Assert.Equal("color: red;", result);
+        }
+
+        [Fact]
+        public void AddStyleFromAttributes_EmptyValue_NoOp()
+        {
+            // Arrange
+            var builder = new StyleBuilder().Add("color", "red");
+            var attrs = new Dictionary<string, object?> { { "style", "" } };
+
+            // Act
+            var result = builder.AddStyleFromAttributes(attrs).Build();
+
+            // Assert
+            Assert.Equal("color: red;", result);
+        }
+
+        [Fact]
+        public void AddStyleFromAttributes_WhitespaceValue_NoOp()
+        {
+            // Arrange
+            var builder = new StyleBuilder().Add("color", "red");
+            var attrs = new Dictionary<string, object?> { { "style", "   " } };
+
+            // Act
+            var result = builder.AddStyleFromAttributes(attrs).Build();
+
+            // Assert
+            Assert.Equal("color: red;", result);
+        }
+
+        [Fact]
+        public void AddStyleFromAttributes_NullValue_NoOp()
+        {
+            // Arrange
+            var builder = new StyleBuilder().Add("color", "red");
+            var attrs = new Dictionary<string, object?> { { "style", null } };
+
+            // Act
+            var result = builder.AddStyleFromAttributes(attrs).Build();
+
+            // Assert
+            Assert.Equal("color: red;", result);
+        }
+
+        [Fact]
+        public void AddStyleFromAttributes_ValidValue_AppendsStyles()
+        {
+            // Arrange
+            var builder = new StyleBuilder().Add("color", "red");
+            var attrs = new Dictionary<string, object?> { { "style", "font-size: 14px" } };
+
+            // Act
+            var result = builder.AddStyleFromAttributes(attrs).Build();
+
+            // Assert
+            Assert.Equal("color: red; font-size: 14px;", result);
+        }
+
+        [Fact]
+        public void AddStyleFromAttributes_WithSemicolon_NormalizesCorrectly()
+        {
+            // Arrange
+            var builder = new StyleBuilder().Add("color", "red");
+            var attrs = new Dictionary<string, object?> { { "style", "font-size: 14px;" } };
+
+            // Act
+            var result = builder.AddStyleFromAttributes(attrs).Build();
+
+            // Assert
+            Assert.Equal("color: red; font-size: 14px;", result);
+        }
+
+        [Fact]
+        public void AddStyleFromAttributes_ObjectValue_ConvertsToString()
+        {
+            // Arrange
+            var builder = new StyleBuilder().Add("color", "red");
+            var attrs = new Dictionary<string, object?> { { "style", 123 } };
+
+            // Act
+            var result = builder.AddStyleFromAttributes(attrs).Build();
+
+            // Assert
+            Assert.Equal("color: red; 123;", result);
+        }
+
+        [Fact]
+        public void AddStyleFromAttributes_CustomKey_Works()
+        {
+            // Arrange
+            var builder = new StyleBuilder().Add("color", "red");
+            var attrs = new Dictionary<string, object?> { { "customStyle", "font-size: 14px" } };
+
+            // Act
+            var result = builder.AddStyleFromAttributes(attrs, "customStyle").Build();
+
+            // Assert
+            Assert.Equal("color: red; font-size: 14px;", result);
+        }
+
+        [Fact]
+        public void AddStyleFromAttributes_BuilderPrecedence_BuilderComesFirst()
+        {
+            // Arrange - same property appears in both
+            var builder = new StyleBuilder().Add("color", "red");
+            var attrs = new Dictionary<string, object?> { { "style", "color: blue" } };
+
+            // Act
+            var result = builder.AddStyleFromAttributes(attrs).Build();
+
+            // Assert - builder's value comes first (red before blue)
+            Assert.StartsWith("color: red;", result);
+            Assert.Contains("color: blue;", result);
+        }
+
+        // Feature 6: AddVerbatim tests
+        [Fact]
+        public void AddVerbatim_AddsRawStyle()
+        {
+            // Arrange
+            var builder = new StyleBuilder();
+
+            // Act
+            var result = builder.AddVerbatim("backdrop-filter: blur(10px)").Build();
+
+            // Assert
+            Assert.Equal("backdrop-filter: blur(10px);", result);
+        }
+
+        [Fact]
+        public void AddVerbatim_WithSemicolon_DoesNotDuplicate()
+        {
+            // Arrange
+            var builder = new StyleBuilder();
+
+            // Act
+            var result = builder.AddVerbatim("backdrop-filter: blur(10px);").Build();
+
+            // Assert
+            Assert.Equal("backdrop-filter: blur(10px);", result);
+        }
+
+        // Feature 4: NullIfEmpty tests
+        [Fact]
+        public void NullIfEmpty_EmptyBuilder_ReturnsNull()
+        {
+            // Arrange
+            var builder = new StyleBuilder();
+
+            // Act
+            var result = builder.NullIfEmpty();
+
+            // Assert
+            Assert.Null(result);
+        }
+
+        [Fact]
+        public void NullIfEmpty_OnlyWhitespace_ReturnsNull()
+        {
+            // Arrange
+            var builder = new StyleBuilder()
+                .AddIf(false, "color", "red");
+
+            // Act
+            var result = builder.NullIfEmpty();
+
+            // Assert
+            Assert.Null(result);
+        }
+
+        [Fact]
+        public void NullIfEmpty_WithContent_ReturnsString()
+        {
+            // Arrange
+            var builder = new StyleBuilder().Add("color", "red");
+
+            // Act
+            var result = builder.NullIfEmpty();
+
+            // Assert
+            Assert.Equal("color: red;", result);
+        }
+
+        // Feature 5: Lazy evaluation tests
+        [Fact]
+        public void Add_LazyCondition_EvaluatesCondition()
+        {
+            // Arrange
+            var conditionCalled = false;
+            bool Condition() { conditionCalled = true; return true; }
+
+            // Act
+            var result = new StyleBuilder()
+                .Add(Condition, "color", "red")
+                .Build();
+
+            // Assert
+            Assert.True(conditionCalled);
+            Assert.Equal("color: red;", result);
+        }
+
+        [Fact]
+        public void Add_LazyCondition_False_DoesNotAddStyle()
+        {
+            // Arrange
+            var conditionCalled = false;
+            bool Condition() { conditionCalled = true; return false; }
+
+            // Act
+            var result = new StyleBuilder()
+                .Add(Condition, "color", "red")
+                .Build();
+
+            // Assert
+            Assert.True(conditionCalled);
+            Assert.Equal("", result);
+        }
+
+        [Fact]
+        public void Add_LazyStringValue_True_InvokesFactory()
+        {
+            // Arrange
+            var factoryCalled = false;
+            string Factory() { factoryCalled = true; return "red"; }
+
+            // Act
+            var result = new StyleBuilder()
+                .Add("color", true, Factory)
+                .Build();
+
+            // Assert
+            Assert.True(factoryCalled);
+            Assert.Equal("color: red;", result);
+        }
+
+        [Fact]
+        public void Add_LazyStringValue_False_DoesNotInvokeFactory()
+        {
+            // Arrange
+            var factoryCalled = false;
+            string Factory() { factoryCalled = true; return "red"; }
+
+            // Act
+            var result = new StyleBuilder()
+                .Add("color", false, Factory)
+                .Build();
+
+            // Assert
+            Assert.False(factoryCalled);
+            Assert.Equal("", result);
+        }
+
+        [Fact]
+        public void Add_LazyDoubleValue_True_InvokesFactory()
+        {
+            // Arrange
+            var factoryCalled = false;
+            double Factory() { factoryCalled = true; return 50.5; }
+
+            // Act
+            var result = new StyleBuilder()
+                .Add("width", true, Factory, "%")
+                .Build();
+
+            // Assert
+            Assert.True(factoryCalled);
+            Assert.Equal("width: 50.5%;", result);
+        }
+
+        [Fact]
+        public void Add_LazyDoubleValue_False_DoesNotInvokeFactory()
+        {
+            // Arrange
+            var factoryCalled = false;
+            double Factory() { factoryCalled = true; return 50.5; }
+
+            // Act
+            var result = new StyleBuilder()
+                .Add("width", false, Factory, "%")
+                .Build();
+
+            // Assert
+            Assert.False(factoryCalled);
+            Assert.Equal("", result);
         }
     }
 }

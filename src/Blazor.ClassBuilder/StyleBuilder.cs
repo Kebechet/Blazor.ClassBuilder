@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using Blazor.ClassBuilder.Extensions;
 
@@ -175,6 +177,86 @@ namespace Blazor.ClassBuilder
         }
 
         /// <summary>
+        /// Adds inline styles from an attributes dictionary (e.g., from Blazor @attributes).
+        /// Merges the "style" attribute value by appending it to the current styles.
+        /// When the same CSS property appears multiple times, the builder's values take precedence (come first).
+        /// </summary>
+        /// <param name="attributes">The attributes dictionary to merge from.</param>
+        /// <param name="key">The attribute key to look for (default: "style").</param>
+        public StyleBuilder AddStyleFromAttributes(IReadOnlyDictionary<string, object?>? attributes, string key = "style")
+        {
+            if (attributes == null)
+            {
+                return this;
+            }
+
+            if (!attributes.TryGetValue(key, out var value))
+            {
+                return this;
+            }
+
+            var styleString = value?.ToString();
+            if (string.IsNullOrWhiteSpace(styleString))
+            {
+                return this;
+            }
+
+            // Normalize and append the style string
+            var trimmed = styleString.Trim();
+            
+            // Use the existing Add(string) method which handles raw style strings
+            Add(trimmed);
+
+            return this;
+        }
+
+        /// <summary>
+        /// Adds a raw CSS style snippet verbatim without parsing.
+        /// This is an alias for Add(string) for clarity when appending raw styles.
+        /// </summary>
+        public StyleBuilder AddVerbatim(string cssSnippet)
+        {
+            return Add(cssSnippet);
+        }
+
+        /// <summary>
+        /// Adds a style property with a lazy-evaluated condition.
+        /// The condition function is invoked when this method is called.
+        /// </summary>
+        public StyleBuilder Add(Func<bool> when, string property, string value)
+        {
+            return AddIf(when(), property, value);
+        }
+
+        /// <summary>
+        /// Adds a style property with a lazy-evaluated value factory if the condition is true.
+        /// The factory is only invoked if the condition is true.
+        /// </summary>
+        public StyleBuilder Add(string property, bool when, Func<string> valueFactory)
+        {
+            if (!when)
+            {
+                return this;
+            }
+
+            return Add(property, valueFactory());
+        }
+
+        /// <summary>
+        /// Adds a style property with a numeric value using a lazy-evaluated factory if the condition is true.
+        /// The factory is only invoked if the condition is true.
+        /// </summary>
+        public StyleBuilder Add(string property, bool when, Func<double> valueFactory, string unit = "")
+        {
+            if (!when)
+            {
+                return this;
+            }
+
+            return Add(property, valueFactory(), unit);
+        }
+
+        /// <summary>
         /// Clears all added styles.
         /// </summary>
         public void Clear()
@@ -188,6 +270,16 @@ namespace Blazor.ClassBuilder
         public string Build()
         {
             return _styleBuilder.ToString().Trim();
+        }
+
+        /// <summary>
+        /// Builds the final CSS style string, returning null if the result is empty or whitespace.
+        /// Useful for preventing Blazor from rendering empty style attributes.
+        /// </summary>
+        public string? NullIfEmpty()
+        {
+            var result = Build();
+            return string.IsNullOrWhiteSpace(result) ? null : result;
         }
 
         /// <summary>
