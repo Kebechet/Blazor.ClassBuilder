@@ -67,11 +67,19 @@ namespace Blazor.ClassBuilder
                 return this;
             }
 
-            var classToAdd = _prefix != null ? _prefix + _prefixSeparator + value : value;
+            var classToAdd = ApplyPrefix(value);
             _cssBuilder.Append(classToAdd);
             _cssBuilder.Append(_delimiter);
 
             return this;
+        }
+
+        /// <summary>
+        /// Applies the current prefix to a class name if a prefix is set.
+        /// </summary>
+        private string ApplyPrefix(string className)
+        {
+            return _prefix != null ? _prefix + _prefixSeparator + className : className;
         }
 
         /// <summary>
@@ -204,12 +212,10 @@ namespace Blazor.ClassBuilder
                 return this;
             }
 
-            // Tokenize by whitespace, trim each token, and materialize to avoid re-enumeration
+            // Tokenize by whitespace and materialize to avoid re-enumeration
             var tokens = classString.Split(new[] { ' ', '\t', '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries)
-                                    .Select(t => t.Trim())
-                                    .Where(t => !string.IsNullOrEmpty(t))
                                     .Distinct()
-                                    .ToArray(); // Materialize to avoid re-enumeration
+                                    .ToArray();
 
             // Temporarily save prefix and clear it for attribute classes
             var savedPrefix = _prefix;
