@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
     <Nullable>enable</Nullable>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
 	<PropertyGroup Label="NugetProperties">
@@ -20,8 +21,8 @@
 		<DebugSymbols>true</DebugSymbols>
 		<DebugType>embedded</DebugType>
 		<PackageIcon>icon.png</PackageIcon>
-		<Version>1.2.0</Version>
-		<PackageReleaseNotes>Added StyleBuilder and .ToCssString()</PackageReleaseNotes>
+		<Version>1.2.1</Version>
+		<PackageReleaseNotes>Enabled XML documentation generation for IntelliSense support</PackageReleaseNotes>
 	</PropertyGroup>
 
 	<ItemGroup>
