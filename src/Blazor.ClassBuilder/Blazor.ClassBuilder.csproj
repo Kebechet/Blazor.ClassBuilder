@@ -21,8 +21,8 @@
 		<DebugSymbols>true</DebugSymbols>
 		<DebugType>embedded</DebugType>
 		<PackageIcon>icon.png</PackageIcon>
-		<Version>1.2.1</Version>
-		<PackageReleaseNotes>Enabled XML documentation generation for IntelliSense support</PackageReleaseNotes>
+		<Version>1.3.0</Version>
+		<PackageReleaseNotes>AttributeBuilder: preserve value types, last-wins on duplicate attribute names, and return a copy from Build()</PackageReleaseNotes>
 	</PropertyGroup>
 
 	<ItemGroup>
