@@ -64,7 +64,7 @@ namespace Blazor.ClassBuilder.Tests
             Assert.Equal(3, result.Count);
             Assert.Equal("text", result["type"]);
             Assert.Equal("Enter name", result["placeholder"]);
-            Assert.Equal("50", result["maxlength"]);
+            Assert.Equal(50, result["maxlength"]);
         }
 
         [Fact]
@@ -272,7 +272,7 @@ namespace Blazor.ClassBuilder.Tests
         }
 
         [Fact]
-        public void Add_IntValue_ConvertsToString()
+        public void Add_IntValue_PreservesValue()
         {
             // Arrange
             var builder = new AttributeBuilder();
@@ -281,11 +281,11 @@ namespace Blazor.ClassBuilder.Tests
             var result = builder.Add("tabindex", 1).Build();
 
             // Assert
-            Assert.Equal("1", result["tabindex"]);
+            Assert.Equal(1, result["tabindex"]);
         }
 
         [Fact]
-        public void Add_BoolValue_ConvertsToString()
+        public void Add_BoolValue_PreservesValue()
         {
             // Arrange
             var builder = new AttributeBuilder();
@@ -294,7 +294,67 @@ namespace Blazor.ClassBuilder.Tests
             var result = builder.Add("data-active", true).Build();
 
             // Assert
-            Assert.Equal("True", result["data-active"]);
+            Assert.Equal(true, result["data-active"]);
+        }
+
+        [Fact]
+        public void Add_DuplicateNameWithinBuilder_LastWins()
+        {
+            // Arrange
+            var builder = new AttributeBuilder();
+
+            // Act
+            var result = builder
+                .Add("class", "a")
+                .Add("class", "b")
+                .Build();
+
+            // Assert
+            Assert.Single(result);
+            Assert.Equal("b", result["class"]);
+        }
+
+        [Fact]
+        public void Add_MergeDuplicateKeysWithDifferentValues_LastWins()
+        {
+            // Arrange
+            var other = new AttributeBuilder().Add("class", "from-other");
+            var builder = new AttributeBuilder().Add("class", "from-builder");
+
+            // Act
+            var result = builder.Add(other).Build();
+
+            // Assert
+            Assert.Single(result);
+            Assert.Equal("from-other", result["class"]);
+        }
+
+        [Fact]
+        public void AddIf_FalseBoolValue_IsPreservedAsBool()
+        {
+            // Arrange
+            var builder = new AttributeBuilder();
+
+            // Act
+            var result = builder.AddIf(true, "disabled", false).Build();
+
+            // Assert
+            Assert.Equal(false, result["disabled"]);
+        }
+
+        [Fact]
+        public void Build_ReturnsIndependentCopy()
+        {
+            // Arrange
+            var builder = new AttributeBuilder().Add("type", "text");
+
+            // Act
+            var first = builder.Build();
+            first["injected"] = "value";
+            var second = builder.Build();
+
+            // Assert
+            Assert.False(second.ContainsKey("injected"));
         }
     }
 }

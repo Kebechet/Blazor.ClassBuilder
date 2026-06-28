@@ -1,8 +1,7 @@
-﻿using Blazor.ClassBuilder.Extensions;
+using Blazor.ClassBuilder.Extensions;
 using IsNullOrEmpty.Extensions;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Blazor.ClassBuilder
 {
@@ -11,7 +10,7 @@ namespace Blazor.ClassBuilder
     /// </summary>
     public class AttributeBuilder
     {
-        private Dictionary<string, object> _attributes { get; set; } = new Dictionary<string, object>();
+        private readonly Dictionary<string, object> _attributes = new Dictionary<string, object>();
 
         /// <summary>
         /// Adds the attribute. E.g. Add("disabled") or Add("placeholder", "Enter your name")
@@ -22,7 +21,8 @@ namespace Blazor.ClassBuilder
         }
 
         /// <summary>
-        /// Adds the attributes from another AttributeBuilder instance
+        /// Adds the attributes from another AttributeBuilder instance. Values from the merged-in
+        /// builder overwrite existing ones with the same name (last-wins).
         /// </summary>
         public AttributeBuilder Add(AttributeBuilder? attributeBuilder)
         {
@@ -31,9 +31,10 @@ namespace Blazor.ClassBuilder
                 return this;
             }
 
-            _attributes = _attributes
-                .Union(attributeBuilder!.Build())
-                .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+            foreach (var attribute in attributeBuilder!.Build())
+            {
+                _attributes[attribute.Key] = attribute.Value;
+            }
 
             return this;
         }
@@ -47,7 +48,9 @@ namespace Blazor.ClassBuilder
         }
 
         /// <summary>
-        /// Adds the attribute if the condition is true. E.g. AddIf(isDisabled, "disabled", "disabled")
+        /// Adds the attribute if the condition is true. E.g. AddIf(isDisabled, "disabled", "disabled").
+        /// The value is stored as-is so Blazor renders bools and numbers with the correct attribute
+        /// semantics. An existing attribute with the same name is overwritten (last-wins).
         /// </summary>
         public AttributeBuilder AddIf(bool canAdd, string parameterName, object? parameterValue)
         {
@@ -56,7 +59,7 @@ namespace Blazor.ClassBuilder
                 return this;
             }
 
-            _attributes.Add(parameterName, parameterValue?.ToString() ?? string.Empty);
+            _attributes[parameterName] = parameterValue ?? string.Empty;
 
             return this;
         }
@@ -85,11 +88,11 @@ namespace Blazor.ClassBuilder
         }
 
         /// <summary>
-        /// Builds the attributes dictionary
+        /// Builds a copy of the attributes dictionary.
         /// </summary>
         public Dictionary<string, object> Build()
         {
-            return _attributes;
+            return new Dictionary<string, object>(_attributes);
         }
     }
 }
