@@ -6,13 +6,14 @@ namespace Blazor.ClassBuilder.Benchmarks
 {
     /// <summary>
     /// Models the real SatisFIT AdaptiveVirtualize styles: a container style that is static across
-    /// renders and a per-item style whose translateY changes every render, the way a scrolling list
-    /// produces a new value on each frame.
+    /// renders and a per-item style that includes an interpolated translateY transform (the dynamic
+    /// part of a virtualized list item). A fixed representative offset keeps every measured
+    /// invocation comparable.
     /// </summary>
     [MemoryDiagnoser]
     public class StyleBuilderBenchmarks
     {
-        private int _offset;
+        private const int ItemOffsetPx = 4080;
 
         [Benchmark]
         public string ContainerStyle()
@@ -27,7 +28,7 @@ namespace Blazor.ClassBuilder.Benchmarks
         [Benchmark]
         public string ItemStyle()
         {
-            var translate = $"translateY({NextOffset().ToString(CultureInfo.InvariantCulture)}px)";
+            var translate = $"translateY({ItemOffsetPx.ToString(CultureInfo.InvariantCulture)}px)";
 
             return new StyleBuilder()
                 .Add("position", "absolute")
@@ -36,13 +37,6 @@ namespace Blazor.ClassBuilder.Benchmarks
                 .Add("width", "100%")
                 .Add("transform", translate)
                 .Build();
-        }
-
-        private int NextOffset()
-        {
-            _offset += 40;
-
-            return _offset;
         }
     }
 
