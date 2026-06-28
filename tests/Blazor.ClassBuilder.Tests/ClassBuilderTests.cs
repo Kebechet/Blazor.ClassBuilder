@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Xunit;
 
 namespace Blazor.ClassBuilder.Tests
@@ -317,6 +318,345 @@ namespace Blazor.ClassBuilder.Tests
 
             // Assert
             Assert.Equal("btn btn-primary active enabled", result);
+        }
+
+        // Feature 1: AddClassFromAttributes tests
+        [Fact]
+        public void AddClassFromAttributes_NullAttributes_NoOp()
+        {
+            // Arrange
+            var builder = new ClassBuilder("btn");
+
+            // Act
+            var result = builder.AddClassFromAttributes(null).Build();
+
+            // Assert
+            Assert.Equal("btn", result);
+        }
+
+        [Fact]
+        public void AddClassFromAttributes_MissingKey_NoOp()
+        {
+            // Arrange
+            var builder = new ClassBuilder("btn");
+            var attrs = new Dictionary<string, object?> { { "id", "test" } };
+
+            // Act
+            var result = builder.AddClassFromAttributes(attrs).Build();
+
+            // Assert
+            Assert.Equal("btn", result);
+        }
+
+        [Fact]
+        public void AddClassFromAttributes_EmptyValue_NoOp()
+        {
+            // Arrange
+            var builder = new ClassBuilder("btn");
+            var attrs = new Dictionary<string, object?> { { "class", "" } };
+
+            // Act
+            var result = builder.AddClassFromAttributes(attrs).Build();
+
+            // Assert
+            Assert.Equal("btn", result);
+        }
+
+        [Fact]
+        public void AddClassFromAttributes_WhitespaceValue_NoOp()
+        {
+            // Arrange
+            var builder = new ClassBuilder("btn");
+            var attrs = new Dictionary<string, object?> { { "class", "   " } };
+
+            // Act
+            var result = builder.AddClassFromAttributes(attrs).Build();
+
+            // Assert
+            Assert.Equal("btn", result);
+        }
+
+        [Fact]
+        public void AddClassFromAttributes_NullValue_NoOp()
+        {
+            // Arrange
+            var builder = new ClassBuilder("btn");
+            var attrs = new Dictionary<string, object?> { { "class", null } };
+
+            // Act
+            var result = builder.AddClassFromAttributes(attrs).Build();
+
+            // Assert
+            Assert.Equal("btn", result);
+        }
+
+        [Fact]
+        public void AddClassFromAttributes_ValidValue_AddsClasses()
+        {
+            // Arrange
+            var builder = new ClassBuilder("btn");
+            var attrs = new Dictionary<string, object?> { { "class", "active primary" } };
+
+            // Act
+            var result = builder.AddClassFromAttributes(attrs).Build();
+
+            // Assert
+            Assert.Equal("btn active primary", result);
+        }
+
+        [Fact]
+        public void AddClassFromAttributes_MultipleWhitespaces_NormalizesTokens()
+        {
+            // Arrange
+            var builder = new ClassBuilder("btn");
+            var attrs = new Dictionary<string, object?> { { "class", "  active   primary  \t rounded  " } };
+
+            // Act
+            var result = builder.AddClassFromAttributes(attrs).Build();
+
+            // Assert
+            Assert.Equal("btn active primary rounded", result);
+        }
+
+        [Fact]
+        public void AddClassFromAttributes_Deduplicates()
+        {
+            // Arrange
+            var builder = new ClassBuilder();
+            var attrs = new Dictionary<string, object?> { { "class", "btn btn active btn" } };
+
+            // Act
+            var result = builder.AddClassFromAttributes(attrs).Build();
+
+            // Assert
+            Assert.Equal("btn active", result);
+        }
+
+        [Fact]
+        public void AddClassFromAttributes_ObjectValue_ConvertsToString()
+        {
+            // Arrange
+            var builder = new ClassBuilder("btn");
+            var attrs = new Dictionary<string, object?> { { "class", 123 } };
+
+            // Act
+            var result = builder.AddClassFromAttributes(attrs).Build();
+
+            // Assert
+            Assert.Equal("btn 123", result);
+        }
+
+        [Fact]
+        public void AddClassFromAttributes_CustomKey_Works()
+        {
+            // Arrange
+            var builder = new ClassBuilder("btn");
+            var attrs = new Dictionary<string, object?> { { "customClass", "active primary" } };
+
+            // Act
+            var result = builder.AddClassFromAttributes(attrs, "customClass").Build();
+
+            // Assert
+            Assert.Equal("btn active primary", result);
+        }
+
+        // Feature 3: Prefix tests
+        [Fact]
+        public void SetPrefix_AppliesPrefixToSubsequentClasses()
+        {
+            // Arrange & Act
+            var result = new ClassBuilder()
+                .SetPrefix("sf")
+                .Add("btn")
+                .Add("primary")
+                .Build();
+
+            // Assert
+            Assert.Equal("sf-btn sf-primary", result);
+        }
+
+        [Fact]
+        public void SetPrefix_WithCustomSeparator_UsesSeparator()
+        {
+            // Arrange & Act
+            var result = new ClassBuilder()
+                .SetPrefix("sf", "_")
+                .Add("btn")
+                .Build();
+
+            // Assert
+            Assert.Equal("sf_btn", result);
+        }
+
+        [Fact]
+        public void SetPrefix_NullPrefix_ClearsPrefix()
+        {
+            // Arrange & Act
+            var result = new ClassBuilder()
+                .SetPrefix("sf")
+                .Add("btn")
+                .SetPrefix(null)
+                .Add("primary")
+                .Build();
+
+            // Assert
+            Assert.Equal("sf-btn primary", result);
+        }
+
+        [Fact]
+        public void ClearPrefix_RemovesPrefix()
+        {
+            // Arrange & Act
+            var result = new ClassBuilder()
+                .SetPrefix("sf")
+                .Add("btn")
+                .ClearPrefix()
+                .Add("primary")
+                .Build();
+
+            // Assert
+            Assert.Equal("sf-btn primary", result);
+        }
+
+        [Fact]
+        public void SetPrefix_DoesNotApplyToAttributeClasses()
+        {
+            // Arrange
+            var attrs = new Dictionary<string, object?> { { "class", "active rounded" } };
+
+            // Act
+            var result = new ClassBuilder()
+                .SetPrefix("sf")
+                .Add("btn")
+                .AddClassFromAttributes(attrs)
+                .Add("primary")
+                .Build();
+
+            // Assert
+            Assert.Equal("sf-btn active rounded sf-primary", result);
+        }
+
+        [Fact]
+        public void SetPrefix_MultiTokenAdd_PrefixesEachToken()
+        {
+            // Arrange & Act
+            var result = new ClassBuilder()
+                .SetPrefix("sf")
+                .Add("btn", "primary", "large")
+                .Build();
+
+            // Assert
+            Assert.Equal("sf-btn sf-primary sf-large", result);
+        }
+
+        // Feature 4: NullIfEmpty tests
+        [Fact]
+        public void NullIfEmpty_EmptyBuilder_ReturnsNull()
+        {
+            // Arrange
+            var builder = new ClassBuilder();
+
+            // Act
+            var result = builder.NullIfEmpty();
+
+            // Assert
+            Assert.Null(result);
+        }
+
+        [Fact]
+        public void NullIfEmpty_OnlyWhitespace_ReturnsNull()
+        {
+            // Arrange
+            var builder = new ClassBuilder()
+                .AddIf(false, "btn");
+
+            // Act
+            var result = builder.NullIfEmpty();
+
+            // Assert
+            Assert.Null(result);
+        }
+
+        [Fact]
+        public void NullIfEmpty_WithContent_ReturnsString()
+        {
+            // Arrange
+            var builder = new ClassBuilder("btn");
+
+            // Act
+            var result = builder.NullIfEmpty();
+
+            // Assert
+            Assert.Equal("btn", result);
+        }
+
+        // Feature 5: Lazy evaluation tests
+        [Fact]
+        public void Add_LazyCondition_EvaluatesCondition()
+        {
+            // Arrange
+            var conditionCalled = false;
+            bool Condition() { conditionCalled = true; return true; }
+
+            // Act
+            var result = new ClassBuilder()
+                .Add(Condition, "btn")
+                .Build();
+
+            // Assert
+            Assert.True(conditionCalled);
+            Assert.Equal("btn", result);
+        }
+
+        [Fact]
+        public void Add_LazyCondition_False_DoesNotAddClass()
+        {
+            // Arrange
+            var conditionCalled = false;
+            bool Condition() { conditionCalled = true; return false; }
+
+            // Act
+            var result = new ClassBuilder()
+                .Add(Condition, "btn")
+                .Build();
+
+            // Assert
+            Assert.True(conditionCalled);
+            Assert.Equal("", result);
+        }
+
+        [Fact]
+        public void Add_LazyValue_True_InvokesFactory()
+        {
+            // Arrange
+            var factoryCalled = false;
+            string Factory() { factoryCalled = true; return "btn"; }
+
+            // Act
+            var result = new ClassBuilder()
+                .Add(true, Factory)
+                .Build();
+
+            // Assert
+            Assert.True(factoryCalled);
+            Assert.Equal("btn", result);
+        }
+
+        [Fact]
+        public void Add_LazyValue_False_DoesNotInvokeFactory()
+        {
+            // Arrange
+            var factoryCalled = false;
+            string Factory() { factoryCalled = true; return "btn"; }
+
+            // Act
+            var result = new ClassBuilder()
+                .Add(false, Factory)
+                .Build();
+
+            // Assert
+            Assert.False(factoryCalled);
+            Assert.Equal("", result);
         }
     }
 }

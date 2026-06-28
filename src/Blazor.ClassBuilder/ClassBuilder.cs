@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace Blazor.ClassBuilder
@@ -10,6 +12,8 @@ namespace Blazor.ClassBuilder
     {
         private readonly StringBuilder _cssBuilder = new StringBuilder();
         private readonly string _delimiter = " ";
+        private string? _prefix = null;
+        private string _prefixSeparator = "-";
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ClassBuilder"/> class.
@@ -63,10 +67,19 @@ namespace Blazor.ClassBuilder
                 return this;
             }
 
-            _cssBuilder.Append(value);
+            var classToAdd = ApplyPrefix(value);
+            _cssBuilder.Append(classToAdd);
             _cssBuilder.Append(_delimiter);
 
             return this;
+        }
+
+        /// <summary>
+        /// Applies the current prefix to a class name if a prefix is set.
+        /// </summary>
+        private string ApplyPrefix(string className)
+        {
+            return _prefix != null ? _prefix + _prefixSeparator + className : className;
         }
 
         /// <summary>
@@ -153,6 +166,101 @@ namespace Blazor.ClassBuilder
         }
 
         /// <summary>
+        /// Sets a prefix to be applied to all subsequently added CSS classes.
+        /// The prefix applies only to classes added via Add/AddIf methods, not to classes merged from attributes.
+        /// </summary>
+        /// <param name="prefix">The prefix to apply. If null or empty, prefix is cleared.</param>
+        /// <param name="separator">The separator between prefix and class name (default: "-").</param>
+        public ClassBuilder SetPrefix(string? prefix, string separator = "-")
+        {
+            _prefix = string.IsNullOrEmpty(prefix) ? null : prefix;
+            _prefixSeparator = separator ?? "-";
+            return this;
+        }
+
+        /// <summary>
+        /// Clears the prefix so no prefix is applied to subsequently added classes.
+        /// </summary>
+        public ClassBuilder ClearPrefix()
+        {
+            _prefix = null;
+            return this;
+        }
+
+        /// <summary>
+        /// Adds CSS classes from an attributes dictionary (e.g., from Blazor @attributes).
+        /// Merges the "class" attribute value by tokenizing and adding individual classes.
+        /// Classes from attributes are NOT prefixed even if SetPrefix was called.
+        /// </summary>
+        /// <param name="attributes">The attributes dictionary to merge from.</param>
+        /// <param name="key">The attribute key to look for (default: "class").</param>
+        public ClassBuilder AddClassFromAttributes(IReadOnlyDictionary<string, object?>? attributes, string key = "class")
+        {
+            if (attributes == null)
+            {
+                return this;
+            }
+
+            if (!attributes.TryGetValue(key, out var value))
+            {
+                return this;
+            }
+
+            var classString = value?.ToString();
+            if (string.IsNullOrWhiteSpace(classString))
+            {
+                return this;
+            }
+
+            // Tokenize by whitespace and materialize to avoid re-enumeration
+            var tokens = classString.Split(new[] { ' ', '\t', '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries)
+                                    .Distinct()
+                                    .ToArray();
+
+            // Temporarily save prefix and clear it for attribute classes
+            var savedPrefix = _prefix;
+            try
+            {
+                _prefix = null;
+
+                foreach (var token in tokens)
+                {
+                    Add(token);
+                }
+            }
+            finally
+            {
+                // Always restore prefix, even if an exception occurs
+                _prefix = savedPrefix;
+            }
+
+            return this;
+        }
+
+        /// <summary>
+        /// Adds a CSS class based on a lazy-evaluated condition.
+        /// The condition function is invoked when this method is called.
+        /// </summary>
+        public ClassBuilder Add(Func<bool> when, string value)
+        {
+            return AddIf(when(), value);
+        }
+
+        /// <summary>
+        /// Adds a CSS class with a lazy-evaluated value factory if the condition is true.
+        /// The factory is only invoked if the condition is true.
+        /// </summary>
+        public ClassBuilder Add(bool canAdd, Func<string> valueFactory)
+        {
+            if (!canAdd)
+            {
+                return this;
+            }
+
+            return Add(valueFactory());
+        }
+
+        /// <summary>
         /// Clears all added CSS classes.
         /// </summary>
         public void Clear()
@@ -166,6 +274,16 @@ namespace Blazor.ClassBuilder
         public string Build()
         {
             return _cssBuilder.ToString().Trim();
+        }
+
+        /// <summary>
+        /// Builds the final CSS class string, returning null if the result is empty or whitespace.
+        /// Useful for preventing Blazor from rendering empty class attributes.
+        /// </summary>
+        public string? NullIfEmpty()
+        {
+            var result = Build();
+            return string.IsNullOrWhiteSpace(result) ? null : result;
         }
 
         /// <summary>
