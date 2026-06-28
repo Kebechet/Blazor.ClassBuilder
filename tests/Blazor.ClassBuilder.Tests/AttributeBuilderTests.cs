@@ -356,5 +356,19 @@ namespace Blazor.ClassBuilder.Tests
             // Assert
             Assert.False(second.ContainsKey("injected"));
         }
+
+        [Fact]
+        public void Add_SelfMerge_DoesNotThrowAndKeepsAttributes()
+        {
+            // Arrange
+            var builder = new AttributeBuilder().Add("type", "text");
+
+            // Act
+            var result = builder.Add(builder).Build();
+
+            // Assert
+            Assert.Single(result);
+            Assert.Equal("text", result["type"]);
+        }
     }
 }

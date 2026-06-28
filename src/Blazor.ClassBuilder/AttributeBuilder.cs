@@ -1,4 +1,3 @@
-using Blazor.ClassBuilder.Extensions;
 using IsNullOrEmpty.Extensions;
 using System;
 using System.Collections.Generic;
@@ -26,12 +25,12 @@ namespace Blazor.ClassBuilder
         /// </summary>
         public AttributeBuilder Add(AttributeBuilder? attributeBuilder)
         {
-            if (attributeBuilder.IsNullOrEmpty())
+            if ((attributeBuilder?._attributes).IsNullOrEmpty() || ReferenceEquals(attributeBuilder, this))
             {
                 return this;
             }
 
-            foreach (var attribute in attributeBuilder!.Build())
+            foreach (var attribute in attributeBuilder!._attributes)
             {
                 _attributes[attribute.Key] = attribute.Value;
             }
